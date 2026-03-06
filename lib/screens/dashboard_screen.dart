@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../database/mock_data_injector.dart';
+import '../services/api_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -10,40 +12,49 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _isSyncing = false;
   double _syncProgress = 0.0;
+  final ApiService _apiService = ApiService();
 
-  // Simulação do RF-001: Sincronização de Dados
-  void _startSync() async {
+  // [RF-001] Sincronização de Dados (Downstream)
+  // Simula o download da lista de alunos e rotas da SEMEC para o SQLite local
+  Future<void> _iniciarSincronizacao() async {
     setState(() {
       _isSyncing = true;
-      _syncProgress = 0.0;
+      _syncProgress = 0.1;
     });
 
-    // Simulando o download de vetores faciais e rotas (Downstream)
-    for (int i = 0; i <= 10; i++) {
-      await Future.delayed(const Duration(milliseconds: 300));
-      setState(() {
-        _syncProgress = i / 10;
-      });
+    try {
+      // Simula o delay de rede para baixar vetores faciais e rotas [cite: 16, 23]
+      await Future.delayed(const Duration(seconds: 1));
+      setState(() => _syncProgress = 0.5);
+
+      // Injeta os dados mockados no banco de dados local [cite: 18]
+      await MockDataInjector.inject();
+      
+      setState(() => _syncProgress = 1.0);
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Sincronização concluída! Dados prontos para uso offline."),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erro na sincronização: $e"), backgroundColor: Colors.red),
+      );
+    } finally {
+      setState(() => _isSyncing = false);
     }
-
-    setState(() {
-      _isSyncing = false;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Dados da SEMEC sincronizados com sucesso! (Modo Offline Ativo)"),
-        backgroundColor: Colors.green,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Painel do Monitor"),
-        backgroundColor: const Color(0xFF008000), // Verde [cite: 41]
+        title: const Text("Painel de Controle - SEMEC", style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF008000), // Verde 
         centerTitle: true,
       ),
       body: Padding(
@@ -51,20 +62,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status do Veículo e Rota
-            _buildInfoCard("Veículo:", "Ônibus Escolar 04", Icons.directions_bus),
-            _buildInfoCard("Rota Atual:", "Zona Rural - P.A. Joncon", Icons.map),
+            // Informações da Rota e Veículo [cite: 4]
+            _buildStatusCard("Veículo Escolar:", "Ônibus 04 - CDA", Icons.directions_bus),
+            _buildStatusCard("Monitor Responsável:", "Marcio Rodrigues", Icons.person),
             
             const SizedBox(height: 30),
             const Text(
-              "Sincronização Necessária [RF-001]",
+              "Sincronização de Dados [RF-001]",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            
-            // Área de Sincronização [cite: 14, 17]
+
+            // Área de Sincronização e Progresso
             Container(
-              padding: const EdgeInsets.all(15),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(15),
@@ -73,24 +84,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 children: [
                   if (_isSyncing) ...[
-                    LinearProgressIndicator(value: _syncProgress, color: Colors.blue),
-                    const SizedBox(height: 10),
-                    Text("Baixando lista de alunos e fotos... ${( _syncProgress * 100).toInt()}%"),
-                  ] else ...[
-                    const Text("Última sincronização: Hoje, 07:30h"),
+                    LinearProgressIndicator(value: _syncProgress, color: const Color(0xFF0000FF)), // Azul 
                     const SizedBox(height: 15),
+                    Text("Baixando dados da SEMEC... ${(_syncProgress * 100).toInt()}%"),
+                  ] else ...[
+                    const Icon(Icons.cloud_done, color: Colors.green, size: 40),
+                    const SizedBox(height: 10),
+                    const Text("Pronto para iniciar a rota.", style: TextStyle(fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton.icon(
-                        onPressed: _startSync,
+                        onPressed: _iniciarSincronizacao,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0000FF), // Azul [cite: 41]
+                          backgroundColor: const Color(0xFF0000FF), // Azul 
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        icon: const Icon(Icons.cloud_download, color: Colors.white),
-                        label: const Text("SINCRONIZAR COM SEMEC", 
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.sync, color: Colors.white),
+                        label: const Text("SINCRONIZAR AGORA", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -100,44 +112,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             const Spacer(),
 
-            // Botão Principal para Iniciar Viagem
+            // [RNF-002] Botão de Iniciar Rota - Grande e Alto Contraste 
             SizedBox(
               width: double.infinity,
               height: 80,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/facial_recognition');
-                },
+                onPressed: () => Navigator.pushNamed(context, '/facial_recognition'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF008000),
+                  backgroundColor: const Color(0xFF008000), // Verde 
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  elevation: 8,
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.play_arrow, size: 40, color: Colors.white),
+                    Icon(Icons.play_circle_fill, size: 40, color: Colors.white),
                     SizedBox(width: 15),
-                    Text("INICIAR ROTA DE EMBARQUE", 
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text("INICIAR EMBARQUE", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoCard(String label, String value, IconData icon) {
+  Widget _buildStatusCard(String label, String value, IconData icon) {
     return Card(
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF008000)),
+        leading: CircleAvatar(
+          backgroundColor: const Color(0xFF008000).withOpacity(0.1),
+          child: Icon(icon, color: const Color(0xFF008000)),
+        ),
         title: Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-        subtitle: Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+        subtitle: Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ),
     );
   }
