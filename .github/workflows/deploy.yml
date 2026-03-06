@@ -11,6 +11,8 @@ jobs:
         with:
           channel: 'stable'
       - run: flutter config --enable-web
+      # Este comando abaixo corrige o erro, criando os arquivos web necessários
+      - run: flutter create . --platforms web
       - run: flutter build web --release --base-href "/Bus/"
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
