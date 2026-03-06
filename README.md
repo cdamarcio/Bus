@@ -9,24 +9,19 @@ O sistema foi projetado para operar prioritariamente em modo offline, garantindo
 
 ## Funcionalidades Implementadas
 
-* 
-**Sincronização de Dados (Downstream/Upstream):** Download da lista de alunos, vetores faciais e rotas via Wi-Fi.
+* **Sincronização de Dados (Downstream/Upstream):** Download da lista de alunos, vetores faciais e rotas via Wi-Fi.
 
 
-* 
-**Reconhecimento Facial Offline:** Identificação dos alunos localmente no dispositivo (tempo de resposta < 3s) utilizando Google ML Kit ou TensorFlow Lite.
+* **Reconhecimento Facial Offline:** Identificação dos alunos localmente no dispositivo (tempo de resposta < 3s) utilizando Google ML Kit ou TensorFlow Lite.
 
 
-* 
-**Registro de Embarque Manual:** Fallback para casos de falha na biometria.
+* **Registro de Embarque Manual:** Fallback para casos de falha na biometria.
 
 
-* 
-**Monitoramento de Trajeto:** Captura de coordenadas GPS com Geotagging em cada embarque para auditoria de conformidade com FNDE/INEP.
+* **Monitoramento de Trajeto:** Captura de coordenadas GPS com Geotagging em cada embarque para auditoria de conformidade com FNDE/INEP.
 
 
-* 
-**Detecção Automática de Chegada (Geofencing):** Reconhecimento do perímetro escolar para disparo automático de sincronização.
+* **Detecção Automática de Chegada (Geofencing):** Reconhecimento do perímetro escolar para disparo automático de sincronização.
 
 
 
@@ -34,39 +29,31 @@ O sistema foi projetado para operar prioritariamente em modo offline, garantindo
 
 Em conformidade com a LGPD, o sistema utiliza:
 
-* 
-**Criptografia Local:** Banco de dados SQLite criptografado (AES-256) para proteção de dados de menores.
+* **Criptografia Local:** Banco de dados SQLite criptografado (AES-256) para proteção de dados de menores.
 
 
-* 
-**Autenticação Segura:** Login via tokens JWT integrados ao servidor central da SEMEC.
+* **Autenticação Segura:** Login via tokens JWT integrados ao servidor central da SEMEC.
 
 
 
 ## Tecnologias Utilizadas
 
-* 
-**Linguagem:** Dart (Framework Flutter).
+* **Linguagem:** Dart (Framework Flutter).
 
 
-* 
-**Banco de Dados Local:** SQLite (sqflite).
+* **Banco de Dados Local:** SQLite (sqflite).
 
 
-* 
-**Identidade Visual:** Padronizada com as cores do brasão de Conceição do Araguaia (Verde, Amarelo e Azul).
+* **Identidade Visual:** Padronizada com as cores do brasão de Conceição do Araguaia (Verde, Amarelo e Azul).
 
 
 
 ## Créditos
 
-* 
-**Cliente:** Secretaria Municipal de Educação (SEMEC).
+* **Cliente:** Secretaria Municipal de Educação (SEMEC).
 
 
-* 
-**Desenvolvedor:** Márcio Rodrigues de Oliveira.
+* **Desenvolvedor:** Márcio Rodrigues de Oliveira.
 
 
-* 
-**Supervisor:** Alcides Platiny Alves Batista.
+* **Supervisor:** Alcides Platiny Alves Batista.
