@@ -17,7 +17,6 @@ class _FacialRecognitionScreenState extends State<FacialRecognitionScreen> {
   bool _isLoading = false;
   Timer? _simulationTimer;
   
-  // Aluno mockado para a demonstração
   final String _mockMatricula = "2024005";
   final String _mockStudentName = "Felipe Rodrigues";
   final String _mockStudentSchool = "Escola Municipal Deuzuita";
@@ -30,12 +29,13 @@ class _FacialRecognitionScreenState extends State<FacialRecognitionScreen> {
     // [AUTO-DETECT] Força a detecção após 5 segundos para a Web
     _simulationTimer = Timer(const Duration(seconds: 5), () {
       if (mounted && !_isStudentDetected) {
-        _forçarDeteccao();
+        _forcarDeteccao(); // Nome corrigido sem 'ç'
       }
     });
   }
 
-  void _forçarDeteccao() {
+  // Nome da função corrigido para evitar erro de compilação
+  void _forcarDeteccao() {
     setState(() => _isStudentDetected = true);
   }
 
@@ -60,7 +60,6 @@ class _FacialRecognitionScreenState extends State<FacialRecognitionScreen> {
     super.dispose();
   }
 
-  // [RF-004] Registro de Embarque com Geotagging e Trava de Timeout
   Future<void> _confirmarEmbarque() async {
     setState(() => _isLoading = true);
     
@@ -69,16 +68,13 @@ class _FacialRecognitionScreenState extends State<FacialRecognitionScreen> {
       final position = await LocationService().getCurrentLocation()
           .timeout(const Duration(seconds: 3), onTimeout: () => null);
 
-      // Coordenada real ou padrão de Conceição do Araguaia
       double lat = position?.latitude ?? -8.2575;
       double lng = position?.longitude ?? -49.2618;
 
-      // Salva no SQLite local
       await DatabaseHelper().registrarEmbarque(_mockMatricula, lat, lng);
 
       if (!mounted) return;
       
-      // Feedback e fechamento da tela
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("✅ Embarque de Felipe registrado com sucesso!"),
@@ -86,12 +82,11 @@ class _FacialRecognitionScreenState extends State<FacialRecognitionScreen> {
         ),
       );
 
-      // SAI DA TELA E VOLTA PRO DASHBOARD
       Navigator.pop(context); 
 
     } catch (e) {
       debugPrint("Erro no registro: $e");
-      if (mounted) Navigator.pop(context); // Garante que sai da tela mesmo com erro
+      if (mounted) Navigator.pop(context); 
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -104,12 +99,10 @@ class _FacialRecognitionScreenState extends State<FacialRecognitionScreen> {
         title: const Text("Validação Facial - SEMEC"),
         backgroundColor: const Color(0xFF008000),
       ),
-      // Toque em qualquer lugar para forçar o reconhecimento se o timer falhar
       body: GestureDetector(
-        onTap: _isStudentDetected ? null : _forçarDeteccao,
+        onTap: _isStudentDetected ? null : _forcarDeteccao, // Nome corrigido aqui
         child: Stack(
           children: [
-            // Câmera ou Fundo de Simulação
             _controller != null && _controller!.value.isInitialized
                 ? SizedBox.expand(child: CameraPreview(_controller!))
                 : Container(
@@ -123,7 +116,6 @@ class _FacialRecognitionScreenState extends State<FacialRecognitionScreen> {
                     ),
                   ),
 
-            // Moldura Guia
             Center(
               child: Container(
                 width: 260,
@@ -185,10 +177,6 @@ class _FacialRecognitionScreenState extends State<FacialRecognitionScreen> {
                     ),
                   ),
                 ),
-              TextButton(
-                onPressed: () => setState(() => _isStudentDetected = false),
-                child: const Text("TENTAR NOVAMENTE"),
-              )
             ],
           ),
         ),
