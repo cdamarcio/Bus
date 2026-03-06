@@ -1,4 +1,7 @@
+import 'package:flutter/foundation.dart'; // Para usar kIsWeb
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart'; // Necessário para Web
 import 'package:path/path.dart';
 import 'package:bus/models/aluno_model.dart';
 
@@ -16,15 +19,30 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'frota_escolar_cda.db');
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
+    // [IMPORTANTE] Inicialização para suporte Web no navegador
+    if (kIsWeb) {
+      // Define a fábrica de banco de dados para a versão Web
+      databaseFactory = databaseFactoryFfiWeb;
+      String path = 'frota_escolar_cda.db'; // Na web não usamos getDatabasesPath
+      
+      return await openDatabase(
+        path,
+        version: 1,
+        onCreate: _onCreate,
+      );
+    } else {
+      // Configuração padrão para Android/iOS (Tablet real da SEMEC)
+      String path = join(await getDatabasesPath(), 'frota_escolar_cda.db');
+      return await openDatabase(
+        path,
+        version: 1,
+        onCreate: _onCreate,
+      );
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    // Criação da tabela com Geotagging e Auditoria
     await db.execute('''
       CREATE TABLE alunos(
         matricula TEXT PRIMARY KEY,

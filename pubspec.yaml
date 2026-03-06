@@ -36,3 +36,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   # Configuração para aceitar ativos de imagem se necessário futuramente
+
+  flutter:
+    sdk: flutter
+  sqflite: ^2.3.0
+  sqflite_common_ffi: ^2.3.0
+  sqflite_common_ffi_web: ^0.4.0
